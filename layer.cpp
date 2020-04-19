@@ -25,7 +25,7 @@
 #include <vulkan/vulkan.h>
 #include "swapchain.h"
 
-#define LAYER_NAME "VirtualSwapchain"
+#define LAYER_NAME "VK_LAYER_GOOGLE_virtual_swapchain"
 
 #define LAYER_NAME_FUNCTION(fn) VirtualSwapchain##fn
 

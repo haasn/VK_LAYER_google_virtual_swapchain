@@ -1,7 +1,7 @@
 {
   "file_format_version" : "1.0.0",
   "layer": {
-    "name": "VirtualSwapchain",
+    "name": "VK_LAYER_GOOGLE_virtual_swapchain",
     "type": "GLOBAL",
     "library_path": @library@,
     "api_version" : "1.0.5",
