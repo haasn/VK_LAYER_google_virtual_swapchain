@@ -26,8 +26,6 @@
 #include <string>
 #include <thread>
 
-#include "core/vulkan/tools/image.h"
-
 namespace {
 
 // Determines what heap memory should be allocated from, given
@@ -45,18 +43,6 @@ int32_t FindMemoryType(
 }
 
 void null_callback(void*, uint8_t*, size_t) {}
-
-const char* kImageDumpPathEnv = "IMAGE_DUMP_PATH";
-
-void WritePngFile(std::unique_ptr<uint8_t[]> image_data, size_t size,
-                  std::string file_name, uint32_t width, uint32_t height,
-                  VkFormat image_format) {
-  std::ofstream output_file;
-  output_file.open(file_name, std::ios::binary | std::ios::out);
-  vk_tools::WritePng(&output_file, image_data.get(), size, width, height,
-                     image_format);
-  output_file.close();
-}
 
 }  // namespace
 
@@ -285,10 +271,6 @@ VirtualSwapchain::VirtualSwapchain(
                  },
                  this);
 #endif
-  const char* const image_dump_dir = std::getenv(kImageDumpPathEnv);
-  if (image_dump_dir != nullptr) {
-    image_dump_dir_ = std::string(image_dump_dir);
-  }
 }
 
 void VirtualSwapchain::Destroy(const VkAllocationCallbacks* pAllocator) {
@@ -314,21 +296,6 @@ void VirtualSwapchain::Destroy(const VkAllocationCallbacks* pAllocator) {
   }
 
   functions_->vkDestroyCommandPool(device_, command_pool_, pAllocator);
-}
-
-void VirtualSwapchain::DumpImageToFile(uint8_t* image_data, size_t size) {
-  std::unique_ptr<uint8_t[]> image_data_owned(new uint8_t[size]());
-  memcpy(image_data_owned.get(), image_data, size);
-
-  auto now = std::chrono::system_clock::now().time_since_epoch().count();
-  auto image_path = image_dump_dir_ + "/image_" +
-                    std::to_string(dumped_frame_count_++) + "_ts_" +
-                    std::to_string(now) + ".png";
-
-  std::thread file_writer(WritePngFile, std::move(image_data_owned), size,
-                          image_path, width_, height_,
-                          swapchain_info_.imageFormat);
-  file_writer.detach();
 }
 
 void VirtualSwapchain::CopyThreadFunc() {
@@ -373,9 +340,6 @@ void VirtualSwapchain::CopyThreadFunc() {
     uint32_t length = ImageByteSize();
     {
       callback_(callback_user_data_, (uint8_t*)mapped_value, length);
-      if (image_dump_dir_ != "") {
-        DumpImageToFile((uint8_t*)mapped_value, length);
-      }
     }
 
     functions_->vkUnmapMemory(device_,
