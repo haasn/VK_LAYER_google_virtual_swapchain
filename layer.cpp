@@ -502,6 +502,10 @@ vkGetInstanceProcAddr(VkInstance instance, const char* funcName) {
   INTERCEPT_SURFACE(vkCreateStreamDescriptorSurfaceGGP);
   INTERCEPT_SURFACE(vkCreateMacOSSurfaceMVK);
 
+  // Add our own vkCreateVirtualSurface as a new vulkan function
+  INTERCEPT_SURFACE(vkCreateVirtualSurfaceGOOGLE);
+
+
 #undef INTERCEPT_SURFACE
   // If we are calling a non-overloaded function then we have to
   // return the "next" in the chain. On vkCreateInstance we stored this in
